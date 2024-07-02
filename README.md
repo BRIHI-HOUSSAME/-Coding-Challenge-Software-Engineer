@@ -99,6 +99,5 @@ tests/
 
 ## Contact
 
-For any questions, please contact us at [tech-challenge@youcan.shop](mailto:tech-challenge@youcan.shop).
-```
+For any questions, please contact me at brihihossam@gmail.com
 
