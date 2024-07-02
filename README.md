@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+
 # Coding Challenge - Junior Software Engineer - Backend (PHP)
 
 ## Project Overview
@@ -8,7 +7,7 @@ This project is a backend system for managing products and categories. It includ
 
 
 
-## Technologies Usedgit 
+## Technologies Used
 
 - Laravel
 - Vue.js
