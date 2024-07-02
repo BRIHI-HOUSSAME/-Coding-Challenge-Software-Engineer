@@ -1,24 +1,13 @@
 <?php
 namespace App\Repositories;
 
-use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Models\Product;
 
-class ProductRepository implements ProductRepositoryInterface
+class ProductRepository
 {
-    public function all()
-    {
-        return Product::all();
-    }
-
     public function create(array $data)
     {
         return Product::create($data);
-    }
-
-    public function update(Product $product, array $data)
-    {
-        return $product->update($data);
     }
 
     public function delete(Product $product)
@@ -26,9 +15,16 @@ class ProductRepository implements ProductRepositoryInterface
         return $product->delete();
     }
 
-    public function find($id)
+    public function getAll($sortField = 'name', $sortOrder = 'asc')
     {
-        return Product::find($id);
+        return Product::orderBy($sortField, $sortOrder)->paginate(10);
+    }
+
+    public function filterByCategory($categoryId)
+    {
+        return Product::whereHas('categories', function($query) use ($categoryId) {
+            $query->where('id', $categoryId);
+        })->paginate(10);
     }
 }
 

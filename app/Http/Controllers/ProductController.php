@@ -1,8 +1,11 @@
 <?php
+
+
 namespace App\Http\Controllers;
 
-use App\Services\ProductService;
 use Illuminate\Http\Request;
+use App\Services\ProductService;
+use App\Models\Category;
 
 class ProductController extends Controller
 {
@@ -13,10 +16,25 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = $this->productService->getAllProducts();
-        return view('products.index', compact('products'));
+        $sortField = $request->get('sortField', 'name');
+        $sortOrder = $request->get('sortOrder', 'asc');
+        $categoryId = $request->get('category');
+        $products = $this->productService->listProducts($sortField, $sortOrder);
+
+        if ($categoryId) {
+            $products = $this->productService->filterProductsByCategory($categoryId);
+        }
+
+        $categories = Category::all();
+        return view('products.index', compact('products', 'categories'));
+    }
+
+    public function create()
+    {
+        $categories = Category::all();
+        return view('products.create', compact('categories'));
     }
 
     public function store(Request $request)
@@ -37,8 +55,3 @@ class ProductController extends Controller
         return redirect()->route('products.index');
     }
 }
-
-
-
-
-?>
