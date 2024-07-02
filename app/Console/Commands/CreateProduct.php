@@ -3,30 +3,26 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Services\ProductService;
 
 class CreateProduct extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'command:name';
+    protected $signature = 'product:create {name} {description} {price} {image} {categories*}';
+    protected $description = 'Create a new product';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
     public function handle()
     {
-        return Command::SUCCESS;
+        $name = $this->argument('name');
+        $description = $this->argument('description');
+        $price = $this->argument('price');
+        $image = $this->argument('image');
+        $categories = $this->argument('categories');
+        app(ProductService::class)->createProduct(compact('name', 'description', 'price', 'image', 'categories'));
+        $this->info('Product created successfully.');
     }
 }

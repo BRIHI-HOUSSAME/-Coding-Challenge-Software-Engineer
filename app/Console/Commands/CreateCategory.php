@@ -3,30 +3,23 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Services\CategoryService;
 
 class CreateCategory extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'command:name';
+    protected $signature = 'category:create {name} {parent_id?}';
+    protected $description = 'Create a new category';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
     public function handle()
     {
-        return Command::SUCCESS;
+        $name = $this->argument('name');
+        $parentId = $this->argument('parent_id');
+        app(CategoryService::class)->createCategory(['name' => $name, 'parent_id' => $parentId]);
+        $this->info('Category created successfully.');
     }
 }
