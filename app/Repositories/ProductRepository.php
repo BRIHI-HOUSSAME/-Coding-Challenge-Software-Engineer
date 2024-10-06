@@ -1,43 +1,52 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Product;
+use YoucanShop\QueryOption\Laravel\UsesQueryOption;
 
-class ProductRepository
-{
-    public function create(array $data)
-    {
+class ProductRepository {
+    use UsesQueryOption;
+
+    public function paginate(QueryOption $queryOption) {
+        $query = Product::query();
+
+        // Pass the query through defined criteria
+        [$query, $queryOption] = $this->pipeThroughCriterias($query, $queryOption);
+
+        return $query->paginate(
+            $queryOption->getLimit(),
+            '*',
+            'page',
+            $queryOption->getPage()
+        );
+    }
+
+    public function create(array $data) {
         return Product::create($data);
     }
 
-    public function delete(Product $product)
-    {
+    public function find($id) {
+        return Product::findOrFail($id);
+    }
+
+    public function update($id, array $data) {
+        $product = $this->find($id);
+        $product->update($data);
+        return $product;
+    }
+
+    public function delete($id) {
+        $product = $this->find($id);
         return $product->delete();
     }
 
-    public function getAll($sortField = 'name', $sortOrder = 'asc')
-    {
-        return Product::orderBy($sortField, $sortOrder)->paginate(10);
-    }
-
-    public function filterByCategory($categoryId)
-    {
-        return Product::whereHas('categories', function($query) use ($categoryId) {
-            $query->where('id', $categoryId);
-        })->paginate(10);
+    protected function getQueryOptionCriterias(): array {
+        return [
+            SearchCriteria::class,
+            FilterByPriceCriteria::class,
+            SortByCriteria::class,
+            // Add more criteria classes as needed
+        ];
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-?>

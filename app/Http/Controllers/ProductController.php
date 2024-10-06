@@ -1,57 +1,73 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\ProductService;
-use App\Models\Category;
+use YoucanShop\QueryOption\QueryOptionFactory;
 
-class ProductController extends Controller
+class ProductsController extends Controller
 {
-    protected $productService;
+    private ProductService $productService;
 
-    public function __construct(ProductService $productService)
-    {
+    public function __construct(ProductService $productService) {
         $this->productService = $productService;
     }
 
-    public function index(Request $request)
-    {
-        $sortField = $request->get('sortField', 'name');
-        $sortOrder = $request->get('sortOrder', 'asc');
-        $categoryId = $request->get('category');
-        $products = $this->productService->listProducts($sortField, $sortOrder);
+    public function index(Request $request) {
+        $queryOption = QueryOptionFactory::createFromIlluminateRequest($request);
+        
+        // Specify allowed filters based on user roles
+        $queryOption->allowedFilters(['category', 'price', 'availability']);
 
-        if ($categoryId) {
-            $products = $this->productService->filterProductsByCategory($categoryId);
-        }
+        $products = $this->productService->paginate($queryOption);
 
-        $categories = Category::all();
-        return view('products.index', compact('products', 'categories'));
+        return view('products.index', compact('products'));
     }
 
-    public function create()
-    {
-        $categories = Category::all();
-        return view('products.create', compact('categories'));
+    public function create() {
+        return view('products.create');
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
+    public function store(Request $request) {
+        // Validate request
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'category' => 'required|string|max:255',
             'price' => 'required|numeric',
-            'image' => 'required|image',
-            'categories' => 'required|array'
+            'availability' => 'required|boolean',
         ]);
 
-        $imagePath = $request->file('image')->store('images', 'public');
-        $data['image'] = $imagePath;
+        // Call the product service to create a new product
+        $this->productService->create($validatedData);
 
-        $this->productService->createProduct($data);
+        return redirect()->route('products.index')->with('success', 'Product created successfully.');
+    }
 
-        return redirect()->route('products.index');
+    public function edit($id) {
+        $product = $this->productService->findById($id);
+        return view('products.edit', compact('product'));
+    }
+
+    public function update(Request $request, $id) {
+        // Validate request
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'availability' => 'required|boolean',
+        ]);
+
+        // Call the product service to update the product
+        $this->productService->update($id, $validatedData);
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+    }
+
+    public function destroy($id) {
+        // Call the product service to delete the product
+        $this->productService->delete($id);
+
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
 }
